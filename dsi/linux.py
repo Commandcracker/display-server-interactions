@@ -409,6 +409,9 @@ class Window(WindowBase):
             y
         )
 
+        # flush display or events will run delayed cus thai'r only called on the next update
+        xlib.XFlush(display)
+
     def send_mouse_click(self, x: int, y: int, button: ButtonCodes = ButtonCodes.Button1) -> None:
         """
         Send a mouse click to the window at the given coordinates without moving the pointer.

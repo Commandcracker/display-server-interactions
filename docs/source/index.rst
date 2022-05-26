@@ -5,8 +5,9 @@ Welcome to DSI's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   get_window
-   os_specific_code
+   get_window.rst
+   os_specific_code.rst
+   reference.rst
 
 Indices and tables
 ==================

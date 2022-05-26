@@ -26,9 +26,15 @@ def main() -> None:
         name="dsi",
         version=get_version("dsi/__init__.py"),
 
-        url="https://github.com/Commandcracker/dsi",
+        author="Commandcracker",
 
-        documentation="https://dsi.readthedocs.io/en/latest/",
+        # url="https://github.com/Commandcracker/dsi",
+
+        project_urls={
+            "Documentation": "https://python-dsi.readthedocs.io/en/latest/",
+            "Source": "https://github.com/Commandcracker/dsi",
+            "Tracker": "https://github.com/Commandcracker/dsi/issues"
+        },
 
         description="DSI allows you to perform basic interactions on your display server, like screenshotting a window or sending input to it.",
         long_description_content_type="text/markdown",
@@ -50,9 +56,18 @@ def main() -> None:
         packages=find_packages(exclude=["test"]),
         # install_requires=requirements,
         classifiers=[
-            "Programming Language :: Python :: 3",
+            "Development Status :: 2 - Pre-Alpha",
+
             "License :: OSI Approved :: Apache Software License",
+
+            "Operating System :: POSIX :: Linux",
             #"Operating System :: OS Independent",
+
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3 :: Only",
+
+            "Topic :: Multimedia :: Graphics",
+            "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
         ]
     )
 

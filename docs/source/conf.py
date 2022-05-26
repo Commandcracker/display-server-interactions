@@ -50,7 +50,10 @@ release = get_version("../../dsi/__init__.py")
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx_copybutton"
+    "sphinx_copybutton",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.autodoc"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -77,3 +80,8 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_static_path = ['_static']
 
 intersphinx_mapping = {"python": ("http://docs.python.org/3", None)}
+
+autodoc_default_options = {
+    'member-order': 'bysource',
+    'undoc-members': True,
+}
