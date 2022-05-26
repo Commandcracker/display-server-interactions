@@ -17,7 +17,7 @@ Get currently active window
 
 .. code-block:: python
 
-    from dsi import DSI
+    from display_server_interactions import DSI
 
     window = DSI.get_active_window()
 
@@ -26,7 +26,7 @@ Get a window by its name
 
 .. code-block:: python
 
-    from dsi import DSI
+    from display_server_interactions import DSI
 
     window = DSI.get_window_by_name("Funny Window Name")
 
@@ -35,6 +35,6 @@ Get window by PID
 
 .. code-block:: python
 
-    from dsi import DSI
+    from display_server_interactions import DSI
 
     window = DSI.get_window_by_pid(42)

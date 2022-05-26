@@ -72,7 +72,7 @@ def main() -> None:
     check_requirements()
 
     printG("Getting version...")
-    version = get_version("dsi/__init__.py")
+    version = get_version("display_server_interactions/__init__.py")
     printB("Version: " + version)
 
     printG("Building DSI...")
@@ -87,7 +87,7 @@ def main() -> None:
 
     printG("Uploading DSI to PyPI...")
     # for testing add " -r pypitest"
-    exit_code = system(f"twine upload dist/dsi-{version}*")
+    exit_code = system(f"twine upload dist/*{version}*")
     if exit_code != 0:
         exitR("Failed to upload DSI to PyPI.")
 
@@ -103,13 +103,13 @@ def main() -> None:
 
     printG("Generating SUMS files...")
     gen_SUMS_files([
-        f"dist/dsi-{version}.tar.gz",
-        f"dist/dsi-{version}-py3-none-any.whl"
+        f"dist/display-server-interactions-{version}.tar.gz",
+        f"dist/display_server_interactions-{version}-py3-none-any.whl"
     ])
 
     printG("Creating GitHub Release...")
     exit_code = system(
-        f"gh release create {version} dist/dsi-{version}* dist/md5SUMS dist/sha256SUMS dist/BLAKE2_256SUMS --generate-notes")
+        f"gh release create {version} dist/*-{version}* dist/md5SUMS dist/sha256SUMS dist/BLAKE2_256SUMS --generate-notes")
     if exit_code != 0:
         exitR("Failed to create GitHub Release.")
 

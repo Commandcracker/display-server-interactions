@@ -1,4 +1,4 @@
-# DSI (Display Server Interactions)
+# Display Server Interactions
 
 DSI allows you to perform basic interactions on your display server, like screenshotting a window or sending input to it.
 Currently, DSI only supports X11/Xorg (GNU/Linux) but it aims to be cross-platform.
@@ -7,12 +7,12 @@ Currently, DSI only supports X11/Xorg (GNU/Linux) but it aims to be cross-platfo
 
 ## Quick overview
 
-Look at the [documentation](https://python-dsi.readthedocs.io/en/latest/) for moor information's
+Look at the [documentation](https://display-server-interactions.readthedocs.io/en/latest/) for moor information's
 
 ### Get a window
 
 ```python
-from dsi import DSI
+from display_server_interactions import DSI
 window = DSI.get_active_window()
 ```
 

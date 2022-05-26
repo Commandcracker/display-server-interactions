@@ -1,5 +1,5 @@
-Welcome to DSI's documentation!
-===============================
+Welcome to Display Server Interactions documentation!
+=====================================================
 
 .. toctree::
    :maxdepth: 2

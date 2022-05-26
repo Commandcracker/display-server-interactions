@@ -1,6 +1,6 @@
-dsi.window.WindowBase
-=====================
+display_server_interactions.window.WindowBase
+=============================================
 
 
-.. autoclass:: dsi.window.WindowBase
+.. autoclass:: display_server_interactions.window.WindowBase
     :members:

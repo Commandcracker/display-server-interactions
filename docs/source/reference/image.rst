@@ -1,6 +1,6 @@
-dsi.image.Image
-===============
+display_server_interactions.image.Image
+=======================================
 
 
-.. autoclass:: dsi.image.Image
+.. autoclass:: display_server_interactions.image.Image
     :members:

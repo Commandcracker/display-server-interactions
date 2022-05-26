@@ -9,7 +9,7 @@ Example OS check
 
 .. code-block:: python
 
-   from dsi import __os_name
+   from display_server_interactions import __os_name
 
    if __os_name == "linux":
       # Code for linux
@@ -37,8 +37,8 @@ Get Window xid
 
 .. code-block:: python
 
-    from dsi import DSI
-    from dsi.linux import Window
+    from display_server_interactions import DSI
+    from display_server_interactions.linux import Window
 
     window: Window = DSI.get_active_window()
     print("XID:", window.xid)
@@ -48,7 +48,7 @@ Get Active Window xid
 
 .. code-block:: python
 
-    from dsi.linux import get_active_window_xid
+    from display_server_interactions.linux import get_active_window_xid
 
     print("XID:", get_active_window_xid())
 
@@ -57,6 +57,6 @@ Get Window by xid
 
 .. code-block:: python
 
-   from dsi.linux import Window
+   from display_server_interactions.linux import Window
 
    window = Window(42)

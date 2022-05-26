@@ -23,24 +23,24 @@ def get_version(rel_path: str) -> str:
 
 def main() -> None:
     setup(
-        name="dsi",
-        version=get_version("dsi/__init__.py"),
+        name="display-server-interactions",
+        version=get_version("display_server_interactions/__init__.py"),
 
         author="Commandcracker",
 
-        # url="https://github.com/Commandcracker/dsi",
+        # url="https://github.com/Commandcracker/display-server-interactions",
 
         project_urls={
-            "Documentation": "https://python-dsi.readthedocs.io/en/latest/",
-            "Source": "https://github.com/Commandcracker/dsi",
-            "Tracker": "https://github.com/Commandcracker/dsi/issues"
+            "Documentation": "https://display-server-interactions.readthedocs.io/en/latest/",
+            "Source": "https://github.com/Commandcracker/display-server-interactions",
+            "Tracker": "https://github.com/Commandcracker/display-server-interactions/issues"
         },
 
         description="DSI allows you to perform basic interactions on your display server, like screenshotting a window or sending input to it.",
         long_description_content_type="text/markdown",
         long_description=read("README.md"),
 
-        py_modules=["dsi"],
+        py_modules=["display_server_interactions"],
 
         keywords=[
             "screen",

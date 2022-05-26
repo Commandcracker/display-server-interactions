@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+# TODO: add way to get pixel from image
 
 class Image(object):
     def __init__(self, data, width, height):

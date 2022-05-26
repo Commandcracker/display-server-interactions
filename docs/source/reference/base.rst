@@ -1,6 +1,5 @@
-dsi.base.DSIBase
-================
+display_server_interactions.base.DSIBase
+========================================
 
-
-.. autoclass:: dsi.base.DSIBase
+.. autoclass:: display_server_interactions.base.DSIBase
     :members:

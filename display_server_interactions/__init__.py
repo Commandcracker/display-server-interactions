@@ -3,7 +3,7 @@
 
 from platform import system as __system
 
-__version__ = "0.0.dev0"
+__version__ = "0.0.dev1"
 
 __os_name = __system().lower()
 

@@ -9,7 +9,7 @@ import cv2
 import time
 
 
-from dsi import DSI
+from display_server_interactions import DSI
 _window = DSI.get_active_window()
 _geo = _window.geometry
 

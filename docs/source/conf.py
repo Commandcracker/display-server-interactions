@@ -36,12 +36,12 @@ def get_version(rel_path: str) -> str:
     raise RuntimeError("Unable to find version string.")
 
 
-project = 'DSI'
+project = 'Display Server Interactions'
 copyright = '2022, Commandcracker'
 author = 'Commandcracker'
 
 # The full version, including alpha/beta/rc tags
-release = get_version("../../dsi/__init__.py")
+release = get_version("../../display_server_interactions/__init__.py")
 
 
 # -- General configuration ---------------------------------------------------

@@ -1,5 +1,5 @@
-dsi.linux
-=========
+display_server_interactions.linux
+=================================
 
-.. automodule:: dsi.linux
+.. automodule:: display_server_interactions.linux
     :members:
