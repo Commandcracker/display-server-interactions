@@ -27,14 +27,9 @@ from ctypes import (
     _SimpleCData
 )
 
-# load libX11.so.6
-x11 = ctypes.util.find_library("X11")
-# if not x11:
-#    raise Exception("X11 library not found!")
-xlib = ctypes.cdll.LoadLibrary(x11)
-
-
 # Setup Xlib Structures
+
+
 class Display(Structure):
     """
     https://tronche.com/gui/x/xlib/display/opening.html#Display\n
@@ -193,9 +188,6 @@ def error_handler(_, event):
     return 0
 
 
-xlib.XSetErrorHandler(error_handler)
-
-
 def get_logger() -> logging.Logger:
     """
     Returns a logger that is responsible for logging XErrorEvents.
@@ -311,46 +303,89 @@ class ButtonCodes(object):
     Button5 = 5
 
 
-# Setup Xlib functions
-xlib.XGetImage.argtypes = [
-    POINTER(Display),
-    c_ulong,  # Drawable (XID)
-    c_int,
-    c_int,
-    c_uint,
-    c_uint,
-    c_ulong,
-    c_int,
-]
-xlib.XGetImage.restype = POINTER(XImage)
+class Xlib(object):
+    def __init__(self):
+        # load libX11.so.6
+        x11 = ctypes.util.find_library("X11")
+        if not x11:
+            raise Exception("X11 library not found!")
+        self.xlib = ctypes.cdll.LoadLibrary(x11)
 
-xlib.XGetWindowAttributes.argtypes = [
-    POINTER(Display),
-    c_ulong,  # Window (XID)
-    POINTER(XWindowAttributes)
-]
-xlib.XOpenDisplay.restype = POINTER(Display)
-xlib.XGetWindowProperty.argtypes = [
-    POINTER(Display),
-    c_ulong,  # Window
-    c_ulong,  # Atom
-    c_long,
-    c_long,
-    c_int,
-    c_ulong,  # Atom
-    POINTER(c_ulong),  # Atom
-    POINTER(c_int),
-    POINTER(c_ulong),
-    POINTER(c_ulong),
-    POINTER(POINTER(c_ubyte))
-]
+        self.xlib.XSetErrorHandler(error_handler)
 
-# main
-display = xlib.XOpenDisplay(None)
-root_window = xlib.XRootWindow(display, 0)
+        # Setup Xlib functions
+        self.xlib.XGetImage.argtypes = [
+            POINTER(Display),
+            c_ulong,  # Drawable (XID)
+            c_int,
+            c_int,
+            c_uint,
+            c_uint,
+            c_ulong,
+            c_int,
+        ]
+        self.xlib.XGetImage.restype = POINTER(XImage)
+
+        self.xlib.XGetWindowAttributes.argtypes = [
+            POINTER(Display),
+            c_ulong,  # Window (XID)
+            POINTER(XWindowAttributes)
+        ]
+        self.xlib.XOpenDisplay.restype = POINTER(Display)
+        self.xlib.XGetWindowProperty.argtypes = [
+            POINTER(Display),
+            c_ulong,  # Window
+            c_ulong,  # Atom
+            c_long,
+            c_long,
+            c_int,
+            c_ulong,  # Atom
+            POINTER(c_ulong),  # Atom
+            POINTER(c_int),
+            POINTER(c_ulong),
+            POINTER(c_ulong),
+            POINTER(POINTER(c_ubyte))
+        ]
+        self.xlib.XInternAtom.argtypes = [POINTER(Display), c_char_p, c_int]
+        self.xlib.XFree.argtypes = [c_void_p]
+        self.xlib.XDestroyImage.argtypes = [POINTER(XImage)]
+        self.xlib.XWarpPointer.argtypes = [
+            POINTER(Display),
+            c_ulong,
+            c_ulong,
+            c_int,
+            c_int,
+            c_uint,
+            c_uint,
+            c_int,
+            c_int
+        ]
+        self.xlib.XFlush.argtypes = [POINTER(Display)]
+        self.xlib.XKeysymToKeycode.argtypes = [POINTER(Display), c_ulong]
+        self.xlib.XStringToKeysym.argtypes = [c_char_p]
+        self.xlib.XSendEvent.argtypes = [
+            POINTER(Display), c_ulong, c_int, c_long, c_void_p]
+        self.xlib.XQueryTree.argtypes = [
+            POINTER(Display),
+            c_ulong,
+            POINTER(c_ulong),
+            POINTER(c_ulong),
+            POINTER(POINTER(c_ulong)),
+            POINTER(c_uint)
+        ]
+
+        # main
+        self.display = self.xlib.XOpenDisplay(None)
+        self.root_window = self.xlib.XRootWindow(self.display, 0)
+
+    def __getattribute__(self, __name: str):
+        if __name in ["xlib", "display", "root_window"]:
+            return super().__getattribute__(__name)
+        else:
+            return self.xlib.__getattribute__(__name)
 
 
-def get_window_property(window_xid: int, property: str, type: _SimpleCData):
+def get_window_property(xlib: Xlib, window_xid: int, property: str, type: _SimpleCData):
     """
     https://tronche.com/gui/x/xlib/window-information/XGetWindowProperty.html
     """
@@ -361,9 +396,12 @@ def get_window_property(window_xid: int, property: str, type: _SimpleCData):
     prop_return = POINTER(c_ubyte)()
 
     xlib.XGetWindowProperty(
-        display,
+        xlib.display,
         window_xid,
-        xlib.XInternAtom(display, c_char_p(property.encode('utf-8')), False),
+        xlib.XInternAtom(
+            xlib.display, c_char_p(property.encode('utf-8')),
+            False
+        ),
         0,
         1000,
         False,
@@ -390,12 +428,18 @@ def get_window_property(window_xid: int, property: str, type: _SimpleCData):
 
 
 class Window(WindowBase):
-    def __init__(self, xid: int) -> None:
+    def __init__(self, xid: int, xlib: Xlib) -> None:
         self.xid = xid
+        self.xlib = xlib
 
     @property
     def name(self) -> str:
-        name = get_window_property(self.xid, "_NET_WM_NAME", c_char * 1024)
+        name = get_window_property(
+            self.xlib,
+            self.xid,
+            "_NET_WM_NAME",
+            c_char * 1024
+        )
         if name:
             return name.decode('utf-8')
         else:
@@ -403,24 +447,24 @@ class Window(WindowBase):
 
     @property
     def pid(self) -> int:
-        return get_window_property(self.xid, "_NET_WM_PID", c_long)
+        return get_window_property(self.xlib, self.xid, "_NET_WM_PID", c_long)
 
     @property
     def active(self) -> bool:
-        return self.xid == get_active_window_xid()
+        return self.xid == get_active_window_xid(self.xlib)
 
     @property
     def geometry(self) -> tuple:
         gwa = XWindowAttributes()
-        xlib.XGetWindowAttributes(display, self.xid, byref(gwa))
+        self.xlib.XGetWindowAttributes(self.xlib.display, self.xid, byref(gwa))
         return (gwa.x, gwa.y, gwa.width, gwa.height)
 
     def get_image(self, geometry: tuple = None) -> Image:
         if geometry is None:
             geometry = self.geometry
 
-        ximage = xlib.XGetImage(
-            display,  # Display
+        ximage = self.xlib.XGetImage(
+            self.xlib.display,  # Display
             self.xid,  # Drawable (Window XID)
             geometry[0],  # x
             geometry[1],  # y
@@ -440,7 +484,7 @@ class Window(WindowBase):
         data = Image(data, geometry[2], geometry[3])
 
         # don't forget to free the memory or you will be fucked
-        xlib.XDestroyImage(ximage)
+        self.xlib.XDestroyImage(ximage)
 
         return data
 
@@ -453,15 +497,15 @@ class Window(WindowBase):
         # https://tronche.com/gui/x/xlib/event-handling/XSendEvent.html
 
         key = XEvent(type=EventTypes.KeyPress).xkey  # KeyPress
-        key.keycode = xlib.XKeysymToKeycode(
-            display,
-            xlib.XStringToKeysym(chr)
+        key.keycode = self.xlib.XKeysymToKeycode(
+            self.xlib.display,
+            self.xlib.XStringToKeysym(c_char_p(chr.encode('utf-8')))
         )  # https://github.com/python-xlib/python-xlib/blob/master/Xlib/keysymdef/latin1.py
         key.window = key.root = self.xid
         key.state = KeyMasks.ShiftMask if chr.isupper() else 0
 
-        xlib.XSendEvent(
-            display,  # Display *display
+        self.xlib.XSendEvent(
+            self.xlib.display,  # Display *display
             key.window,  # Window w
             True,  # Bool propagate
             Masks.KeyPressMask,  # long event_mask
@@ -469,7 +513,7 @@ class Window(WindowBase):
         )
 
         # flush display or events will run delayed cus thai'r only called on the next update
-        xlib.XFlush(display)
+        self.xlib.XFlush(self.xlib.display)
 
     def send_str(self, str: str) -> None:
         """Send a string to the window
@@ -485,8 +529,8 @@ class Window(WindowBase):
             geometry = self.geometry
 
         # https://tronche.com/gui/x/xlib/input/XWarpPointer.html
-        xlib.XWarpPointer(
-            display,
+        self.xlib.XWarpPointer(
+            self.xlib.display,
             self.xid,  # src_w
             self.xid,  # dest_w
             geometry[0],
@@ -498,7 +542,7 @@ class Window(WindowBase):
         )
 
         # flush display or events will run delayed cus thai'r only called on the next update
-        xlib.XFlush(display)
+        self.xlib.XFlush(self.xlib.display)
 
     def send_mouse_click(self, x: int, y: int, button: ButtonCodes = ButtonCodes.Button1) -> None:
         """
@@ -513,8 +557,8 @@ class Window(WindowBase):
         event.x = x
         event.y = y
 
-        xlib.XSendEvent(
-            display,
+        self.xlib.XSendEvent(
+            self.xlib.display,
             event.window,
             True,
             Masks.ButtonPressMask,
@@ -522,12 +566,12 @@ class Window(WindowBase):
         )
 
         # flush display or events will run delayed cus thai'r only called on the next update
-        xlib.XFlush(display)
+        self.xlib.XFlush(self.xlib.display)
 
         event.type = EventTypes.ButtonRelease
 
-        xlib.XSendEvent(
-            display,
+        self.xlib.XSendEvent(
+            self.xlib.display,
             event.window,
             True,
             Masks.ButtonReleaseMask,
@@ -535,21 +579,22 @@ class Window(WindowBase):
         )
 
         # flush display or events will run delayed cus thai'r only called on the next update
-        xlib.XFlush(display)
+        self.xlib.XFlush(self.xlib.display)
 
 
-def get_active_window_xid() -> int:
+def get_active_window_xid(xlib: Xlib) -> int:
     """
     Returns the XID of the active window.
     """
     return get_window_property(
-        root_window,
+        xlib,
+        xlib.root_window,
         "_NET_ACTIVE_WINDOW",
         c_long
     )
 
 
-def get_connected_xids(window):
+def get_connected_xids(xlib: Xlib, window: int):
     """
     https://tronche.com/gui/x/xlib/window-information/XQueryTree.html\n
     Uses XQueryTree to get the XIDs of connected windows.
@@ -560,7 +605,7 @@ def get_connected_xids(window):
     nitems_return = c_uint()
 
     xlib.XQueryTree(
-        display,  # Display *display
+        xlib.display,  # Display *display
         window,  # Window window
         byref(root_return),  # Window *root_return
         byref(parent_return),  # Window *parent_return
@@ -579,11 +624,11 @@ def get_connected_xids(window):
     return xids
 
 
-def get_all_windows() -> list:
+def get_all_windows(xlib: Xlib) -> list:
     """
     Get all window XIDs. By recursively getting all connected windows.
     """
-    final = get_connected_xids(root_window)
+    final = get_connected_xids(xlib, xlib.root_window)
     next = final.copy()
 
     run = True
@@ -591,7 +636,7 @@ def get_all_windows() -> list:
         run = False
         next_temp = []
         for xid in next:
-            xids = get_connected_xids(xid)
+            xids = get_connected_xids(xlib, xid)
             if len(xids) > 0:
                 run = True
             next_temp += xids
@@ -602,14 +647,17 @@ def get_all_windows() -> list:
     final_windows = []
 
     for xid in final:
-        final_windows.append(Window(xid))
+        final_windows.append(Window(xid, xlib))
 
     return final_windows
 
 
 class DSI(DSIBase):
-    def get_active_window() -> WindowBase:
-        return Window(get_active_window_xid())
+    def __init__(self):
+        self.xlib = Xlib()
 
-    def get_all_windows() -> list:
-        return get_all_windows()
+    def get_active_window(self) -> WindowBase:
+        return Window(get_active_window_xid(self.xlib), self.xlib)
+
+    def get_all_windows(self) -> list:
+        return get_all_windows(self.xlib)

@@ -19,7 +19,8 @@ Get currently active window
 
     from display_server_interactions import DSI
 
-    window = DSI.get_active_window()
+    with DSI() as dsi:
+        window = dsi.get_active_window()
 
 Get a window by its name
 ------------------------
@@ -28,7 +29,8 @@ Get a window by its name
 
     from display_server_interactions import DSI
 
-    window = DSI.get_window_by_name("Funny Window Name")
+    with DSI() as dsi:
+        window = dsi.get_window_by_name("Funny Window Name")
 
 Get window by PID
 -----------------
@@ -37,4 +39,5 @@ Get window by PID
 
     from display_server_interactions import DSI
 
-    window = DSI.get_window_by_pid(42)
+    with DSI() as dsi:
+        window = dsi.get_window_by_pid(42)

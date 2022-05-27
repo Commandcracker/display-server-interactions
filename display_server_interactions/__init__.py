@@ -4,12 +4,12 @@
 from platform import system as __system
 
 __version__ = "0.0.dev2"
+__author__ = "Commandcracker"
 
 __os_name = __system().lower()
 
 if __os_name == "linux":
-    #from .linux import DSI
-    pass
+    from .linux import DSI
 
 elif __os_name == "windows":
     raise NotImplementedError("Windows is not yet implemented.")

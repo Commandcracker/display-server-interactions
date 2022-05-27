@@ -10,7 +10,9 @@ import time
 
 
 from display_server_interactions import DSI
-_window = DSI.get_active_window()
+
+dsi = DSI()
+_window = dsi.get_active_window()
 _geo = _window.geometry
 
 
