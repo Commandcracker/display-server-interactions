@@ -29,8 +29,8 @@ from ctypes import (
 
 # load libX11.so.6
 x11 = ctypes.util.find_library("X11")
-if not x11:
-    raise Exception("X11 library not found!")
+# if not x11:
+#    raise Exception("X11 library not found!")
 xlib = ctypes.cdll.LoadLibrary(x11)
 
 
