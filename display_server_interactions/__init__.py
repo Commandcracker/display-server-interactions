@@ -8,7 +8,8 @@ __version__ = "0.0.dev2"
 __os_name = __system().lower()
 
 if __os_name == "linux":
-    from .linux import DSI
+    #from .linux import DSI
+    pass
 
 elif __os_name == "windows":
     raise NotImplementedError("Windows is not yet implemented.")
