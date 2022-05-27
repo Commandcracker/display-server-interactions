@@ -23,7 +23,8 @@ Look at the [documentation](https://display-server-interactions.readthedocs.io/e
 
 ```python
 from display_server_interactions import DSI
-window = DSI.get_active_window()
+dsi = DSI()
+window = dsi.get_active_window()
 ```
 
 ### Get basic window information
