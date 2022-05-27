@@ -10,18 +10,16 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-from os.path import dirname, join, abspath
-import sphinx_rtd_theme
-import os
-import sys
-
-sys.path.insert(
-    0,
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-)
+# import os
+# import sys
+# sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- Project information -----------------------------------------------------
+
+
+import sphinx_rtd_theme
+from os.path import dirname, join, abspath
 
 
 def read(rel_path: str) -> str:
