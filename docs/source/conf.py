@@ -14,7 +14,7 @@ from os.path import dirname, join, abspath
 import sphinx_rtd_theme
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('../../display_server_interactions'))
 
 
 # -- Project information -----------------------------------------------------
