@@ -3,7 +3,7 @@
 
 from abc import ABCMeta, abstractmethod
 from .window import WindowBase
-from . import __os_name
+#from . import __os_name
 
 
 class DSIBase(object, metaclass=ABCMeta):
@@ -48,30 +48,30 @@ class DSIBase(object, metaclass=ABCMeta):
             if window.name is not None and name in window.name:
                 return window
 
-    @property
-    def platform(self) -> str:
-        """
-        Returns the platform name.
-        """
-        return __os_name
+    # @property
+    # def platform(self) -> str:
+    #    """
+    #    Returns the platform name.
+    #    """
+    #    return __os_name
 
-    @property
-    def linux(self) -> bool:
-        """
-        Returns True if the platform is linux.
-        """
-        return self.platform == "linux"
+    # @property
+    # def linux(self) -> bool:
+    #    """
+    #    Returns True if the platform is linux.
+    #    """
+    #    return self.platform == "linux"
 
-    @property
-    def windows(self) -> bool:
-        """
-        Returns True if the platform is windows.
-        """
-        return self.platform == "windows"
+    # @property
+    # def windows(self) -> bool:
+    #    """
+    #    Returns True if the platform is windows.
+    #    """
+    #    return self.platform == "windows"
 
-    @property
-    def mac(self) -> bool:
-        """
-        Returns True if the platform is mac.
-        """
-        return self.platform == "darwin"
+    # @property
+    # def mac(self) -> bool:
+    #    """
+    #    Returns True if the platform is mac.
+    #    """
+    #    return self.platform == "darwin"
