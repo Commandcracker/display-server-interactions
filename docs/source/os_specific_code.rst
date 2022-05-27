@@ -9,25 +9,16 @@ Example OS check
 
 .. code-block:: python
 
-   from display_server_interactions import __os_name
+   from display_server_interactions import DSI
 
-   if __os_name == "linux":
-      # Code for linux
-      pass
-
-   elif __os_name == "windows":
-      # Code for windows
-      pass
-
-   elif __os_name == "darwin":
-      # Code for macosx
-      pass
-
+   if DSI.linux:
+      """Code for linux"""
+   elif DSI.windows:
+      """Code for windows"""
+   elif DSI.mac:
+      """Code for mac"""
    else:
-      # Error out if os is not supported
-      raise NotImplementedError("Your OS is not supported.")
-
-
+      raise Exception("Your OS is not supported.")
 
 X11/Xorg (GNU/Linux)
 --------------------

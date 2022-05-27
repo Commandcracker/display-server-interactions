@@ -9,17 +9,26 @@ class WindowBase(object, metaclass=ABCMeta):
     @property
     @abstractmethod
     def name(self) -> str:
-        pass
+        """
+        Returns the name of the window.
+        Returns None if no name is available.
+        """
 
     @property
     @abstractmethod
     def pid(self) -> int:
-        pass
+        """
+        Returns the process id of the window.
+        Returns None if no pid is available.
+        """
 
     @property
     @abstractmethod
     def active(self) -> bool:
-        pass
+        """
+        Returns True if the window is active.
+        Returns False if the window is not active.
+        """
 
     @property
     @abstractmethod
@@ -31,20 +40,38 @@ class WindowBase(object, metaclass=ABCMeta):
 
     @abstractmethod
     def get_image(self, geometry: tuple = None) -> Image:
-        pass
+        """
+        Returns an Image of the window.
+        With the geometry parameter you can specify a sub-region of the window that will be captured.
+        """
 
     @abstractmethod
     def send_chr(self, chr: chr) -> None:
-        pass
+        """
+        send the keystroke of the given character to the window.
+        """
 
     @abstractmethod
     def send_str(self, str: str) -> None:
-        pass
+        """
+        Send keystrokes equivalent to the string you pass to the window.
+        """
 
     @abstractmethod
     def warp_pointer(self, x: int, y: int, geometry: tuple = None) -> None:
-        pass
+        """
+        Moves the pointer relative to the window to the given coordinates.
+        """
 
     @abstractmethod
     def send_mouse_click(self, x: int, y: int, button) -> None:
-        pass
+        """
+        Send a mouse click to the window at the given coordinates.
+        On some windows/applications you need to move the pointer with warp_pointer() first.
+        """
+
+    def __repr__(self) -> str:
+        name = self.name
+        if name:
+            name = f'"{name}"'
+        return f'Window(name={name}, pid={self.pid}, active={self.active}, geometry={self.geometry})'

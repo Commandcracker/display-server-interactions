@@ -3,7 +3,7 @@
 
 from platform import system as __system
 
-__version__ = "0.0.dev1"
+__version__ = "0.0.dev2"
 
 __os_name = __system().lower()
 
@@ -17,6 +17,6 @@ elif __os_name == "darwin":
     raise NotImplementedError("MacOS is not yet implemented.")
 
 else:
-    raise NotImplementedError("Your OS is not supported.")
+    raise Exception("Your OS is not supported.")
 
 __all__ = ["DSI"]

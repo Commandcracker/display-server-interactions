@@ -5,6 +5,6 @@ Reference
     :maxdepth: 3
 
     reference/windowbase.rst
-    reference/image.rst
     reference/base.rst
+    reference/image.rst
     reference/linux.rst

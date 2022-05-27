@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from operator import le
-
+# local modules
 from .base import DSIBase
 from .window import WindowBase
 from .image import Image
 
 # built-in modules
+import logging
 import ctypes.util
 from ctypes import (
     POINTER,
@@ -36,10 +36,18 @@ xlib = ctypes.cdll.LoadLibrary(x11)
 
 # Setup Xlib Structures
 class Display(Structure):
-    pass
+    """
+    https://tronche.com/gui/x/xlib/display/opening.html#Display\n
+    /usr/include/X11/Xlib.h: 487
+    """
 
 
 class XImage(Structure):
+    """
+    https://tronche.com/gui/x/xlib/graphics/images.html#XImage\n
+    /usr/include/X11/Xlib.h: 360-394
+    """
+
     _fields_ = [
         ('width', c_int),
         ('height', c_int),
@@ -60,6 +68,11 @@ class XImage(Structure):
 
 
 class XWindowAttributes(Structure):
+    """
+    https://tronche.com/gui/x/xlib/window-information/XGetWindowAttributes.html\n
+    /usr/include/X11/Xlib.h: 308-334
+    """
+
     _fields_ = [
         ("x", c_int32),
         ("y", c_int32),
@@ -88,6 +101,11 @@ class XWindowAttributes(Structure):
 
 
 class XKeyEvent(Structure):
+    """
+    https://tronche.com/gui/x/xlib/events/keyboard-pointer/keyboard-pointer.html#XKeyEvent\n
+    /usr/include/X11/Xlib.h: 557-571
+    """
+
     _fields_ = [
         ('type', c_int),
         ('serial', c_ulong),
@@ -108,6 +126,11 @@ class XKeyEvent(Structure):
 
 
 class XButtonEvent(ctypes.Structure):
+    """
+    https://tronche.com/gui/x/xlib/events/keyboard-pointer/keyboard-pointer.html#XButtonEvent\n
+    /usr/include/X11/Xlib.h: 575-589
+    """
+
     _fields_ = [
         ('type', ctypes.c_int),
         ('serial', ctypes.c_ulong),
@@ -128,6 +151,10 @@ class XButtonEvent(ctypes.Structure):
 
 
 class XEvent(ctypes.Union):
+    """
+    https://tronche.com/gui/x/xlib/events/structures.html#XEvent\n
+    /usr/include/X11/Xlib.h: 973-1009
+    """
     _fields_ = [
         ('type', ctypes.c_int),
         ('xkey', XKeyEvent),
@@ -135,10 +162,57 @@ class XEvent(ctypes.Union):
         ('pad', ctypes.c_long*24),
     ]
 
+
+class XErrorEvent(Structure):
+    """
+    https://tronche.com/gui/x/xlib/event-handling/protocol-errors/default-handlers.html#XErrorEvent\n
+    /usr/include/X11/Xlib.h: 924-932
+    """
+
+    def __repr__(self) -> str:
+        return f"XErrorEvent(type={self.type}, serial={self.serial}, error_code={self.error_code}, request_code={self.request_code}, minor_code={self.minor_code})"
+
+    _fields_ = [
+        ("type", c_int),
+        ("display", POINTER(Display)),
+        ("serial", c_ulong),
+        ("error_code", c_ubyte),
+        ("request_code", c_ubyte),
+        ("minor_code", c_ubyte),
+        ("resourceid", c_void_p),
+    ]
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.CRITICAL)
+
+
+@ctypes.CFUNCTYPE(c_int, POINTER(Display), POINTER(XErrorEvent))
+def error_handler(_, event):
+    logger.error("%s", event.contents)
+    return 0
+
+
+xlib.XSetErrorHandler(error_handler)
+
+
+def get_logger() -> logging.Logger:
+    """
+    Returns a logger that is responsible for logging XErrorEvents.
+    The logger is set to CRITICAL. So it will not log anything.
+    To make it log something, set the log level at least to ERROR.
+    You can archive this with "logger.setLevel(logging.ERROR)".
+    """
+    return logger
+
 # Setup Xlib Variables
 
 
 class Masks(object):
+    """
+    https://tronche.com/gui/x/xlib/events/mask.html\n
+    /usr/include/X11/X.h: 150-175
+    """
     NoEventMask = 0
     KeyPressMask = 1
     KeyReleaseMask = 2
@@ -168,6 +242,10 @@ class Masks(object):
 
 
 class EventTypes(object):
+    """
+    https://tronche.com/gui/x/xlib/events/types.html\n
+    /usr/include/X11/X.h: 181-215
+    """
     KeyPress = 2
     KeyRelease = 3
     ButtonPress = 4
@@ -206,6 +284,10 @@ class EventTypes(object):
 
 
 class KeyMasks(object):
+    """
+    https://tronche.com/gui/x/xlib/events/keyboard-pointer/keyboard-pointer.html\n
+    /usr/include/X11/X.h: 221-228
+    """
     ShiftMask = 1
     LockMask = 2
     ControlMask = 4
@@ -217,6 +299,10 @@ class KeyMasks(object):
 
 
 class ButtonCodes(object):
+    """
+    https://tronche.com/gui/x/xlib/events/keyboard-pointer/keyboard-pointer.html\n
+    /usr/include/X11/X.h: 259-263
+    """
     AnyButton = 0
     Button1 = 1
     Button2 = 2
@@ -265,13 +351,15 @@ root_window = xlib.XRootWindow(display, 0)
 
 
 def get_window_property(window_xid: int, property: str, type: _SimpleCData):
+    """
+    https://tronche.com/gui/x/xlib/window-information/XGetWindowProperty.html
+    """
     actual_type_return = c_ulong()
     actual_format_return = c_int()
     nitems_return = c_ulong()
     bytes_after_return = c_ulong()
     prop_return = POINTER(c_ubyte)()
 
-    # https://tronche.com/gui/x/xlib/window-information/XGetWindowProperty.html
     xlib.XGetWindowProperty(
         display,
         window_xid,
@@ -451,6 +539,9 @@ class Window(WindowBase):
 
 
 def get_active_window_xid() -> int:
+    """
+    Returns the XID of the active window.
+    """
     return get_window_property(
         root_window,
         "_NET_ACTIVE_WINDOW",
@@ -459,6 +550,10 @@ def get_active_window_xid() -> int:
 
 
 def get_connected_xids(window):
+    """
+    https://tronche.com/gui/x/xlib/window-information/XQueryTree.html\n
+    Uses XQueryTree to get the XIDs of connected windows.
+    """
     root_return = c_ulong()
     parent_return = c_ulong()
     children_return = POINTER(c_ulong)()
@@ -478,10 +573,16 @@ def get_connected_xids(window):
     for xid in range(nitems_return.value):
         xids.append(children_return[xid])
 
+    # don't forget to free the memory or you will be fucked
+    xlib.XFree(children_return)
+
     return xids
 
 
 def get_all_windows() -> list:
+    """
+    Get all window XIDs. By recursively getting all connected windows.
+    """
     final = get_connected_xids(root_window)
     next = final.copy()
 
