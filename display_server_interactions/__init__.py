@@ -3,7 +3,7 @@
 
 from platform import system as __system
 
-__version__ = "0.0.dev3"
+__version__ = "0.0.dev4"
 __author__ = "Commandcracker"
 
 __os_name = __system().lower()

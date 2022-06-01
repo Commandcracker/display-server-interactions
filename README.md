@@ -9,6 +9,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/Commandcracker/display-server-interactions)](https://github.com/Commandcracker/display-server-interactions/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/Commandcracker/display-server-interactions)](https://github.com/Commandcracker/display-server-interactions/network)
 [![GitHub issues](https://img.shields.io/github/issues/Commandcracker/display-server-interactions)](https://github.com/Commandcracker/display-server-interactions/issues)
+[![Publish](https://github.com/Commandcracker/display-server-interactions/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/Commandcracker/display-server-interactions/actions/workflows/pypi-publish.yml)
 
 DSI allows you to perform basic interactions on your display server, like screenshotting a window or sending input to it.
 Currently, DSI only supports X11/Xorg (GNU/Linux) but it aims to be cross-platform.
