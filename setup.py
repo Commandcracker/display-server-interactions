@@ -19,7 +19,7 @@ def get_version(rel_path: str) -> str:
     raise RuntimeError("Unable to find version string.")
 
 
-#requirements = read_requirements("requirements.txt")
+# requirements = read_requirements("requirements.txt")
 
 def main() -> None:
     setup(
@@ -61,7 +61,8 @@ def main() -> None:
             "License :: OSI Approved :: Apache Software License",
 
             "Operating System :: POSIX :: Linux",
-            #"Operating System :: OS Independent",
+            "Operating System :: Microsoft :: Windows",
+            # "Operating System :: OS Independent",
 
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3 :: Only",
