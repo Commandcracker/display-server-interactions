@@ -5,8 +5,13 @@
 import numpy as np
 import cv2
 
+try:
+    from rich import print
+except ImportError:
+    pass
+
 # built-in modules
-import time
+from time import time
 
 
 from display_server_interactions import DSI
@@ -20,9 +25,9 @@ def benchmark(function, times: int = 100, show: bool = False) -> np.ndarray:
     results = np.zeros(times, dtype=np.float64)
 
     for i in range(times):
-        last_time = time.time()
+        last_time = time()
         img = function()
-        fps = (1 / (time.time() - last_time))
+        fps = (1 / (time() - last_time))
         if show:
             cv2.imshow("OpenCV/Numpy normal", img)
             cv2.waitKey(1)
@@ -39,7 +44,9 @@ def benchmark_DSI(**args) -> np.ndarray:
 
 def benchmark_PIL(**args) -> np.ndarray:
     import PIL.ImageGrab
-    def func(): return PIL.ImageGrab.grab(bbox=_geo)
+
+    def func():
+        return cv2.cvtColor(np.array(PIL.ImageGrab.grab(bbox=_geo)), cv2.COLOR_BGR2RGB)
     return benchmark(function=func, **args)
 
 
@@ -53,7 +60,7 @@ def benchmark_MSS(**args) -> np.ndarray:
     return benchmark(function=func, **args)
 
 
-def main():
+def main() -> None:
     to_benchmark = {
         "DSI": benchmark_DSI,
         "MSS": benchmark_MSS,
@@ -64,7 +71,7 @@ def main():
 
     for name, function in to_benchmark.items():
         print("Benchmarking:", name)
-        results[name] = function(show=False, times=200)
+        results[name] = function(show=True, times=200)
         print("\n")
 
     print("Results:")

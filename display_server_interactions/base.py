@@ -16,7 +16,7 @@ class DSIBase(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_all_windows(self) -> list:
+    def get_all_windows(self) -> list[WindowBase]:
         """
         Returns a list of all Windows.
         """

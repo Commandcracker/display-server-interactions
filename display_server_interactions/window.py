@@ -3,6 +3,8 @@
 
 from abc import ABCMeta, abstractmethod
 from .image import Image
+from .buttons import MouseButtons
+from .box import Box
 
 
 class WindowBase(object, metaclass=ABCMeta):
@@ -32,14 +34,14 @@ class WindowBase(object, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def geometry(self) -> tuple:
+    def geometry(self) -> Box:
         """
         Returns: tuple: (x, y, width, height)
         """
         pass
 
     @abstractmethod
-    def get_image(self, geometry: tuple = None) -> Image:
+    def get_image(self, geometry: Box = None) -> Image:
         """
         Returns an Image of the window.
         With the geometry parameter you can specify a sub-region of the window that will be captured.
@@ -58,13 +60,13 @@ class WindowBase(object, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def warp_pointer(self, x: int, y: int, geometry: tuple = None) -> None:
+    def warp_pointer(self, x: int, y: int, geometry: Box = None) -> None:
         """
         Moves the pointer relative to the window to the given coordinates.
         """
 
     @abstractmethod
-    def send_mouse_click(self, x: int, y: int, button) -> None:
+    def send_mouse_click(self, x: int, y: int, button: MouseButtons = MouseButtons.LEFT) -> None:
         """
         Send a mouse click to the window at the given coordinates.
         On some windows/applications you need to move the pointer with warp_pointer() first.
@@ -73,5 +75,5 @@ class WindowBase(object, metaclass=ABCMeta):
     def __repr__(self) -> str:
         name = self.name
         if name:
-            name = f'"{name}"'
-        return f'Window(name={name}, pid={self.pid}, active={self.active}, geometry={self.geometry})'
+            return f'Window(name="{self.name}", pid={self.pid}, active={self.active}, geometry={self.geometry})'
+        return f'Window(pid={self.pid}, active={self.active}, geometry={self.geometry})'

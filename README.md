@@ -12,13 +12,13 @@
 [![Publish](https://github.com/Commandcracker/display-server-interactions/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/Commandcracker/display-server-interactions/actions/workflows/pypi-publish.yml)
 
 DSI allows you to perform basic interactions on your display server, like screenshotting a window or sending input to it.
-Currently, DSI only supports X11/Xorg (GNU/Linux) but it aims to be cross-platform.
+Currently, DSI only supports X11/Xorg (GNU/Linux) and Windows but it aims to be cross-platform.
 
 **WARNING: Please Do not use DSI in production, because it's currently in development!**
 
 ## Quick overview
 
-Look at the [documentation](https://display-server-interactions.readthedocs.io/en/latest/) for moor information's
+Look at the [documentation](https://display-server-interactions.readthedocs.io/en/latest/) for moor information
 
 ### Get a window
 

@@ -5,6 +5,8 @@
 from .base import DSIBase
 from .window import WindowBase
 from .image import Image
+from .buttons import MouseButtons
+from .box import Box
 
 # built-in modules
 import logging
@@ -290,19 +292,6 @@ class KeyMasks(object):
     Mod5Mask = 128
 
 
-class ButtonCodes(object):
-    """
-    https://tronche.com/gui/x/xlib/events/keyboard-pointer/keyboard-pointer.html\n
-    /usr/include/X11/X.h: 259-263
-    """
-    AnyButton = 0
-    Button1 = 1
-    Button2 = 2
-    Button3 = 3
-    Button4 = 4
-    Button5 = 5
-
-
 class Xlib(object):
     def __init__(self):
         # load libX11.so.6
@@ -454,34 +443,39 @@ class Window(WindowBase):
         return self.xid == get_active_window_xid(self.xlib)
 
     @property
-    def geometry(self) -> tuple:
+    def geometry(self) -> Box:
         gwa = XWindowAttributes()
         self.xlib.XGetWindowAttributes(self.xlib.display, self.xid, byref(gwa))
-        return (gwa.x, gwa.y, gwa.width, gwa.height)
+        return Box(
+            x=gwa.x,
+            y=gwa.y,
+            width=gwa.width,
+            height=gwa.height
+        )
 
-    def get_image(self, geometry: tuple = None) -> Image:
+    def get_image(self, geometry: Box = None) -> Image:
         if geometry is None:
             geometry = self.geometry
 
         ximage = self.xlib.XGetImage(
             self.xlib.display,  # Display
             self.xid,  # Drawable (Window XID)
-            geometry[0],  # x
-            geometry[1],  # y
-            geometry[2],  # width
-            geometry[3],  # height
+            geometry.x,  # x
+            geometry.y,  # y
+            geometry.width,  # width
+            geometry.height,  # height
             0x00FFFFFF,  # plane_mask
             2  # format = ZPixmap
         )
 
         raw_data = ctypes.cast(
             ximage.contents.data,
-            POINTER(c_ubyte * geometry[3] * geometry[2] * 4)
+            POINTER(c_ubyte * geometry.height * geometry.width * 4)
         )
 
         data = bytearray(raw_data.contents)
 
-        data = Image(data, geometry[2], geometry[3])
+        data = Image(data, geometry.width, geometry.height)
 
         # don't forget to free the memory or you will be fucked
         self.xlib.XDestroyImage(ximage)
@@ -524,7 +518,7 @@ class Window(WindowBase):
         for chr in str:
             self.send_chr(chr)
 
-    def warp_pointer(self, x: int, y: int, geometry: tuple = None) -> None:
+    def warp_pointer(self, x: int, y: int, geometry: Box = None) -> None:
         if geometry is None:
             geometry = self.geometry
 
@@ -533,10 +527,10 @@ class Window(WindowBase):
             self.xlib.display,
             self.xid,  # src_w
             self.xid,  # dest_w
-            geometry[0],
-            geometry[1],
-            geometry[2],
-            geometry[3],
+            geometry.x,
+            geometry.y,
+            geometry.width,
+            geometry.height,
             x,
             y
         )
@@ -544,7 +538,7 @@ class Window(WindowBase):
         # flush display or events will run delayed cus thai'r only called on the next update
         self.xlib.XFlush(self.xlib.display)
 
-    def send_mouse_click(self, x: int, y: int, button: ButtonCodes = ButtonCodes.Button1) -> None:
+    def send_mouse_click(self, x: int, y: int, button: MouseButtons = MouseButtons.LEFT) -> None:
         """
         Send a mouse click to the window at the given coordinates without moving the pointer.
         Some applications may not respond to the click so it is recommended to also move the pointer with `warp_pointer`.

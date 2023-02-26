@@ -1,25 +1,39 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 from display_server_interactions import DSI
-import numpy as np
-import cv2
+from numpy import array
+from cv2 import imshow, waitKey
 
-with DSI() as dsi:
-    windows = dsi.get_all_windows()
-    print("Windows:", windows)
-    window = dsi.get_active_window()
+try:
+    from rich import print
+except ImportError:
+    pass
 
-    print("Name:", window.name)
-    print("PID:", window.pid)
-    if window.xid:
-        print("XID:", window.xid)
-    print("Geometry:", window.geometry)
 
-    window.send_str("Hello World")
+def main() -> None:
+    with DSI() as dsi:
+        windows = dsi.get_all_windows()
+        print("Windows:", windows)
+        window = dsi.get_active_window()
 
-    window.warp_pointer(100, 100)
-    window.send_mouse_click(100, 100)
+        print("Name:", window.name)
+        print("Active:", window.active)
+        print("PID:", window.pid)
+        if hasattr(window, "xid"):
+            print("XID:", window.xid)
+        print("Geometry:", window.geometry)
 
-    img = np.array(window.get_image())
-    cv2.imshow('img', img)
-    while True:
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        window.send_str("Hello World")
+
+        window.warp_pointer(100, 100)
+        window.send_mouse_click(100, 100)
+
+        imshow('img', array(window.get_image()))
+        while True:
+            if waitKey(1) & 0xFF == ord('q'):
+                break
+
+
+if __name__ == "__main__":
+    main()
