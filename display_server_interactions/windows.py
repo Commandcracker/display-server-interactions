@@ -54,8 +54,8 @@ class Window(WindowBase):
         rect = RECT()
         user32.GetWindowRect(self.window, byref(rect))
         return Box(
-            x=0,
-            y=0,
+            x=rect.left,
+            y=rect.top,
             width=rect.right - rect.left,
             height=rect.bottom - rect.top
         )
@@ -99,14 +99,19 @@ class Window(WindowBase):
             self.send_chr(chr)
 
     def warp_pointer(self, x: int, y: int, geometry: Box = None) -> None:
-        if geometry:
-            rel_x, rel_y = x - geometry.x, y - geometry.y
-        else:
-            rel_x, rel_y = x, y
-        point = POINT(rel_x, rel_y)
+        if geometry is None:
+            geometry = self.geometry
+
+        x = x + geometry.x
+        y = y + geometry.y
+
+        point = POINT(x, y)
         user32.SetCursorPos(point.x, point.y)
 
     def send_mouse_click(self, x: int, y: int, button: MouseButtons = MouseButtons.LEFT) -> None:
+        x = x + self.geometry.x
+        y = y + self.geometry.y
+
         # Press and release the button
         down_code = 0
         up_code = 0
