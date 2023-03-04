@@ -1,6 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+"""
+All X11 specific DSI functions
+"""
+
 # built-in modules
 from typing import Optional
 import logging
@@ -31,6 +35,8 @@ from .buttons import MouseButtons
 from .box import Box
 
 # Setup Xlib Structures
+
+# pylint: disable=too-few-public-methods
 
 
 class Display(Structure):
@@ -168,6 +174,7 @@ class XErrorEvent(Structure):
     """
 
     def __repr__(self) -> str:
+        # pylint: disable-next=line-too-long
         return f"XErrorEvent(type={self.type}, serial={self.serial}, error_code={self.error_code}, request_code={self.request_code}, minor_code={self.minor_code})"
 
     _fields_ = [
@@ -187,6 +194,9 @@ logger.setLevel(logging.CRITICAL)
 
 @ctypes.CFUNCTYPE(c_int, POINTER(Display), POINTER(XErrorEvent))
 def error_handler(_, event):
+    """
+    A C function that handles X11 errors.
+    """
     logger.error("%s", event.contents)
     return 0
 
@@ -294,6 +304,10 @@ class KeyMasks:
 
 
 class Xlib:
+    """
+    A class that provides access to Xlib functions.
+    """
+
     def __init__(self):
         # load libX11.so.6
         x11 = ctypes.util.find_library("X11")
@@ -374,7 +388,7 @@ class Xlib:
         return self.xlib.__getattribute__(__name)
 
 
-def get_window_property(xlib: Xlib, window_xid: int, property: str, type: _SimpleCData):
+def get_window_property(xlib: Xlib, window_xid: int, property_name: str, return_type: _SimpleCData):
     """
     https://tronche.com/gui/x/xlib/window-information/XGetWindowProperty.html
     """
@@ -388,7 +402,7 @@ def get_window_property(xlib: Xlib, window_xid: int, property: str, type: _Simpl
         xlib.display,
         window_xid,
         xlib.XInternAtom(
-            xlib.display, c_char_p(property.encode('utf-8')),
+            xlib.display, c_char_p(property_name.encode('utf-8')),
             False
         ),
         0,
@@ -405,7 +419,7 @@ def get_window_property(xlib: Xlib, window_xid: int, property: str, type: _Simpl
     if prop_return:
         data = cast(
             prop_return,
-            POINTER(type)
+            POINTER(return_type)
         ).contents.value
     else:
         data = None
@@ -417,6 +431,10 @@ def get_window_property(xlib: Xlib, window_xid: int, property: str, type: _Simpl
 
 
 class Window(WindowBase):
+    """
+    An class for interacting with a window on X11.
+    """
+
     def __init__(self, xid: int, xlib: Xlib) -> None:
         self.xid = xid
         self.xlib = xlib
@@ -481,7 +499,7 @@ class Window(WindowBase):
 
         return data
 
-    def send_chr(self, chr: chr) -> None:
+    def send_chr(self, character: chr) -> None:
         """Send a character to the window
 
         Args:
@@ -492,10 +510,10 @@ class Window(WindowBase):
         key = XEvent(type=EventTypes.KeyPress).xkey  # KeyPress
         key.keycode = self.xlib.XKeysymToKeycode(
             self.xlib.display,
-            self.xlib.XStringToKeysym(c_char_p(chr.encode('utf-8')))
+            self.xlib.XStringToKeysym(c_char_p(character.encode('utf-8')))
         )  # https://github.com/python-xlib/python-xlib/blob/master/Xlib/keysymdef/latin1.py
         key.window = key.root = self.xid
-        key.state = KeyMasks.ShiftMask if chr.isupper() else 0
+        key.state = KeyMasks.ShiftMask if character.isupper() else 0
 
         self.xlib.XSendEvent(
             self.xlib.display,  # Display *display
@@ -508,14 +526,14 @@ class Window(WindowBase):
         # flush display or events will run delayed cus thai'r only called on the next update
         self.xlib.XFlush(self.xlib.display)
 
-    def send_str(self, str: str) -> None:
+    def send_str(self, string: str) -> None:
         """Send a string to the window
 
         Args:
             str (str): The string to send
         """
-        for chr in str:
-            self.send_chr(chr)
+        for character in string:
+            self.send_chr(character)
 
     def warp_pointer(self, x: int, y: int, geometry: Optional[Box] = None) -> None:
         if geometry is None:
@@ -538,10 +556,12 @@ class Window(WindowBase):
         self.xlib.XFlush(self.xlib.display)
 
     def send_mouse_click(self, x: int, y: int, button: MouseButtons = MouseButtons.LEFT) -> None:
+        # pylint: disable=line-too-long
         """
         Send a mouse click to the window at the given coordinates without moving the pointer.
         Some applications may not respond to the click so it is recommended to also move the pointer with `warp_pointer`.
         """
+        # pylint: enable=line-too-long
         event = XEvent(type=EventTypes.ButtonPress).xbutton
         event.window = event.root = self.xid
         event.button = button
@@ -622,20 +642,20 @@ def get_all_windows(xlib: Xlib) -> list:
     Get all window XIDs. By recursively getting all connected windows.
     """
     final = get_connected_xids(xlib, xlib.root_window)
-    next = final.copy()
+    next_window = final.copy()
 
     run = True
     while run:
         run = False
         next_temp = []
-        for xid in next:
+        for xid in next_window:
             xids = get_connected_xids(xlib, xid)
             if len(xids) > 0:
                 run = True
             next_temp += xids
 
-        next = next_temp
-        final += next
+        next_window = next_temp
+        final += next_window
 
     final_windows = []
 
@@ -646,6 +666,10 @@ def get_all_windows(xlib: Xlib) -> list:
 
 
 class DSI(DSIBase):
+    """
+    Main DSI class
+    """
+
     def __init__(self):
         self.xlib = Xlib()
 

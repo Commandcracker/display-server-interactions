@@ -1,6 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+"""
+All Windows specific DSI functions
+"""
+
 # built-in modules
 from typing import Optional
 from ctypes import (
@@ -39,8 +43,13 @@ Copies the source rectangle directly to the destination rectangle.
 SRCCOPY = 0x00CC0020
 WM_CHAR = 0x0102
 
+# pylint: disable=too-few-public-methods
+
 
 class RECT(Structure):
+    """
+    A structure that defines the coordinates of a rectangle.
+    """
     _fields_ = [
         ("left", c_long),
         ("top", c_long),
@@ -48,8 +57,14 @@ class RECT(Structure):
         ("bottom", c_long)
     ]
 
+# pylint: enable=too-few-public-methods
+
 
 class Window(WindowBase):
+    """
+    An class for interacting with a window on Windows.
+    """
+
     def __init__(self, window) -> None:
         self.window = window
 
@@ -133,12 +148,12 @@ class Window(WindowBase):
 
         return img
 
-    def send_chr(self, chr: chr) -> None:
-        user32.PostMessageW(self.window, WM_CHAR, ord(chr), 0)
+    def send_chr(self, character: chr) -> None:
+        user32.PostMessageW(self.window, WM_CHAR, ord(character), 0)
 
-    def send_str(self, str: str) -> None:
-        for chr in str:
-            self.send_chr(chr)
+    def send_str(self, string: str) -> None:
+        for character in string:
+            self.send_chr(character)
 
     def warp_pointer(self, x: int, y: int, geometry: Optional[Box] = None) -> None:
         if geometry is None:
@@ -146,87 +161,80 @@ class Window(WindowBase):
         user32.SetCursorPos(x + geometry.x, y + geometry.y)
 
     def send_mouse_click(self, x: int, y: int, button: MouseButtons = MouseButtons.LEFT) -> None:
-        # Define constants for mouse button codes
-        BUTTON_LEFT = 0x01
-        BUTTON_RIGHT = 0x02
-        BUTTON_MIDDLE = 0x04
-        BUTTON_BACK = 0x05
-        BUTTON_FORWARD = 0x06
-
         # Send the mouse click event
-        if button == BUTTON_LEFT:
+        if button == MouseButtons.LEFT:
             # Left button down
             user32.PostMessageW(
                 self.window,
                 0x201,
-                BUTTON_LEFT,
+                0,
                 x | (y << 16)
             )
             # Left button up
             user32.PostMessageW(
                 self.window,
                 0x202,
-                BUTTON_LEFT,
+                0,
                 x | (y << 16)
             )
-        elif button == BUTTON_RIGHT:
+        elif button == MouseButtons.RIGHT:
             # Right button down
             user32.PostMessageW(
                 self.window,
                 0x204,
-                BUTTON_RIGHT,
+                0,
                 x | (y << 16)
             )
             # Right button up
             user32.PostMessageW(
                 self.window,
                 0x205,
-                BUTTON_RIGHT,
+                0,
                 x | (y << 16)
             )
-        elif button == BUTTON_MIDDLE:
+        elif button == MouseButtons.MIDDLE:
             # Middle button down
             user32.PostMessageW(
                 self.window,
                 0x207,
-                BUTTON_MIDDLE,
+                0,
                 x | (y << 16)
             )
             # Middle button up
             user32.PostMessageW(
                 self.window,
                 0x208,
-                BUTTON_MIDDLE,
+                0,
                 x | (y << 16)
             )
-        elif button == BUTTON_BACK:
+        elif button == MouseButtons.BACKWARD:
             # Backward button down
             user32.PostMessageW(
                 self.window,
                 0x020D,
-                BUTTON_BACK,
+                0,
                 x | (y << 16)
             )
             # Backward button up
             user32.PostMessageW(
                 self.window,
                 0x020E,
-                BUTTON_BACK,
+                0,
                 x | (y << 16)
             )
-        elif button == BUTTON_FORWARD:
+        elif button == MouseButtons.FORWARD:
             # Forward button down
             user32.PostMessageW(
                 self.window,
                 0x020B,
-                BUTTON_FORWARD,
+                0,
                 x | (y << 16)
             )
             # Forward button up
             user32.PostMessageW(
                 self.window,
                 0x020C,
-                BUTTON_FORWARD,
+                0,
                 x | (y << 16)
             )
         else:
@@ -234,6 +242,10 @@ class Window(WindowBase):
 
 
 class DSI(DSIBase):
+    """
+    Main DSI class
+    """
+
     def __init__(self):
         pass
 

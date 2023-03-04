@@ -1,14 +1,24 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+"""
+This module provides a class for interacting with windows
+"""
+
+# built-in modules
 from abc import ABCMeta, abstractmethod
 from typing import Optional
+
+# local modules
 from .image import Image
 from .buttons import MouseButtons
 from .box import Box
 
 
 class WindowBase(metaclass=ABCMeta):
+    """
+    An abstract base class that defines the interface for interacting with a window.
+    """
     @property
     @abstractmethod
     def name(self) -> str:
@@ -42,19 +52,21 @@ class WindowBase(metaclass=ABCMeta):
 
     @abstractmethod
     def get_image(self, geometry: Optional[Box] = None) -> Image:
+        # pylint: disable=line-too-long
         """
         Returns an Image of the window.
         With the geometry parameter you can specify a sub-region of the window that will be captured.
         """
+        # pylint: enable=line-too-long
 
     @abstractmethod
-    def send_chr(self, chr: chr) -> None:
+    def send_chr(self, character: chr) -> None:
         """
         send the keystroke of the given character to the window.
         """
 
     @abstractmethod
-    def send_str(self, str: str) -> None:
+    def send_str(self, string: str) -> None:
         """
         Send keystrokes equivalent to the string you pass to the window.
         """
@@ -75,7 +87,9 @@ class WindowBase(metaclass=ABCMeta):
         """
 
     def __repr__(self) -> str:
+        # pylint: disable=line-too-long
         name = self.name
         if name:
             return f'Window(name="{self.name}", pid={self.pid}, active={self.active}, geometry={self.geometry})'
         return f'Window(pid={self.pid}, active={self.active}, geometry={self.geometry})'
+        # pylint: enable=line-too-long
