@@ -1,17 +1,33 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# built-in modules
+from typing import Optional
+from ctypes import (
+    windll,
+    WINFUNCTYPE,
+    c_long,
+    Structure,
+    create_string_buffer
+)
+from ctypes.wintypes import (
+    DWORD,
+    BOOL,
+    HWND,
+    LPARAM
+)
+from ctypes import (
+    byref,
+    create_unicode_buffer,
+    sizeof
+)
+
 # local modules
 from .base import DSIBase
 from .window import WindowBase
 from .image import Image
 from .buttons import MouseButtons
 from .box import Box
-
-# built-in modules
-from ctypes import windll, WINFUNCTYPE, c_long, Structure, create_string_buffer
-from ctypes.wintypes import DWORD, RECT, BOOL, HWND, LPARAM
-from ctypes import byref, create_unicode_buffer, sizeof
 
 user32 = windll.user32
 gdi32 = windll.gdi32
@@ -24,9 +40,13 @@ SRCCOPY = 0x00CC0020
 WM_CHAR = 0x0102
 
 
-class POINT(Structure):
-    _fields_ = [("x", c_long),
-                ("y", c_long)]
+class RECT(Structure):
+    _fields_ = [
+        ("left", c_long),
+        ("top", c_long),
+        ("right", c_long),
+        ("bottom", c_long)
+    ]
 
 
 class Window(WindowBase):
@@ -52,42 +72,64 @@ class Window(WindowBase):
     @property
     def geometry(self) -> Box:
         rect = RECT()
-        user32.GetWindowRect(self.window, byref(rect))
+        user32.GetClientRect(self.window, byref(rect))
+
+        window_rect = RECT()
+        user32.GetWindowRect(self.window, byref(window_rect))
+
+        title_bar_height = window_rect.bottom - \
+            window_rect.top - (rect.bottom - rect.top)
+
         return Box(
-            x=rect.left,
-            y=rect.top,
+            x=window_rect.left,
+            y=window_rect.top + title_bar_height,
             width=rect.right - rect.left,
             height=rect.bottom - rect.top
         )
 
-    def get_image(self, geometry: Box = None):
+    def get_image(self, geometry: Optional[Box] = None):
         if geometry is None:
             geometry = self.geometry
 
-        # get the window image data
-        hdcSrc = user32.GetDC(self.window)
-        hdcDest = gdi32.CreateCompatibleDC(hdcSrc)
-        hBitmap = gdi32.CreateCompatibleBitmap(
-            hdcSrc,
+        wdc = user32.GetDC(self.window)
+
+        # adjust the bitmap size
+        data_bitmap = gdi32.CreateCompatibleBitmap(
+            wdc,
             geometry.width,
             geometry.height
         )
-        gdi32.SelectObject(hdcDest, hBitmap)
-        user32.PrintWindow(self.window, hdcDest, 0)
+
+        # get the window image data
+        dc_object = gdi32.CreateCompatibleDC(None)
+        gdi32.SelectObject(dc_object, data_bitmap)
+        gdi32.BitBlt(
+            dc_object,
+            0,
+            0,
+            geometry.width,
+            geometry.height,
+            wdc,
+            geometry.x - self.geometry.x,
+            geometry.y - self.geometry.y,
+            SRCCOPY
+        )
 
         # convert the raw data into a format opencv can read
-        bits = create_string_buffer(geometry.width * geometry.height * 4)
-        gdi32.GetBitmapBits(
-            hBitmap, geometry.width *
-            geometry.height * 4,
-            bits
+        signed_ints_array = create_string_buffer(
+            geometry.width * geometry.height * 4
         )
-        img = Image(bits, geometry.width, geometry.height)
+        gdi32.GetBitmapBits(
+            data_bitmap,
+            geometry.width * geometry.height * 4,
+            signed_ints_array
+        )
+        img = Image(signed_ints_array, geometry.width, geometry.height)
 
         # free resources
-        user32.ReleaseDC(self.window, hdcSrc)
-        gdi32.DeleteDC(hdcDest)
-        gdi32.DeleteObject(hBitmap)
+        gdi32.DeleteObject(data_bitmap)
+        gdi32.DeleteDC(dc_object)
+        user32.ReleaseDC(self.window, wdc)
 
         return img
 
@@ -98,43 +140,97 @@ class Window(WindowBase):
         for chr in str:
             self.send_chr(chr)
 
-    def warp_pointer(self, x: int, y: int, geometry: Box = None) -> None:
+    def warp_pointer(self, x: int, y: int, geometry: Optional[Box] = None) -> None:
         if geometry is None:
             geometry = self.geometry
-
-        x = x + geometry.x
-        y = y + geometry.y
-
-        point = POINT(x, y)
-        user32.SetCursorPos(point.x, point.y)
+        user32.SetCursorPos(x + geometry.x, y + geometry.y)
 
     def send_mouse_click(self, x: int, y: int, button: MouseButtons = MouseButtons.LEFT) -> None:
-        x = x + self.geometry.x
-        y = y + self.geometry.y
+        # Define constants for mouse button codes
+        BUTTON_LEFT = 0x01
+        BUTTON_RIGHT = 0x02
+        BUTTON_MIDDLE = 0x04
+        BUTTON_BACK = 0x05
+        BUTTON_FORWARD = 0x06
 
-        # Press and release the button
-        down_code = 0
-        up_code = 0
-        if button == MouseButtons.LEFT:
-            down_code = 0x201
-            up_code = 0x202
-        elif button == MouseButtons.MIDDLE:
-            down_code = 0x207
-            up_code = 0x208
-        elif button == MouseButtons.RIGHT:
-            down_code = 0x204
-            up_code = 0x205
-        elif button == MouseButtons.FORWARD:
-            down_code = 0x20B
-            up_code = 0x20C
-        elif button == MouseButtons.BACKWARD:
-            down_code = 0x20D
-            up_code = 0x20E
+        # Send the mouse click event
+        if button == BUTTON_LEFT:
+            # Left button down
+            user32.PostMessageW(
+                self.window,
+                0x201,
+                BUTTON_LEFT,
+                x | (y << 16)
+            )
+            # Left button up
+            user32.PostMessageW(
+                self.window,
+                0x202,
+                BUTTON_LEFT,
+                x | (y << 16)
+            )
+        elif button == BUTTON_RIGHT:
+            # Right button down
+            user32.PostMessageW(
+                self.window,
+                0x204,
+                BUTTON_RIGHT,
+                x | (y << 16)
+            )
+            # Right button up
+            user32.PostMessageW(
+                self.window,
+                0x205,
+                BUTTON_RIGHT,
+                x | (y << 16)
+            )
+        elif button == BUTTON_MIDDLE:
+            # Middle button down
+            user32.PostMessageW(
+                self.window,
+                0x207,
+                BUTTON_MIDDLE,
+                x | (y << 16)
+            )
+            # Middle button up
+            user32.PostMessageW(
+                self.window,
+                0x208,
+                BUTTON_MIDDLE,
+                x | (y << 16)
+            )
+        elif button == BUTTON_BACK:
+            # Backward button down
+            user32.PostMessageW(
+                self.window,
+                0x020D,
+                BUTTON_BACK,
+                x | (y << 16)
+            )
+            # Backward button up
+            user32.PostMessageW(
+                self.window,
+                0x020E,
+                BUTTON_BACK,
+                x | (y << 16)
+            )
+        elif button == BUTTON_FORWARD:
+            # Forward button down
+            user32.PostMessageW(
+                self.window,
+                0x020B,
+                BUTTON_FORWARD,
+                x | (y << 16)
+            )
+            # Forward button up
+            user32.PostMessageW(
+                self.window,
+                0x020C,
+                BUTTON_FORWARD,
+                x | (y << 16)
+            )
         else:
-            raise ValueError(f"Invalid button '{button}'.")
-
-        user32.mouse_event(down_code, x, y, 0, 0)
-        user32.mouse_event(up_code, x, y, 0, 0)
+            raise ValueError(f"Invalid button code '{button}'.")
 
 
 class DSI(DSIBase):
@@ -149,7 +245,7 @@ class DSI(DSIBase):
         windows = []
 
         @WINFUNCTYPE(BOOL, HWND, LPARAM)
-        def callback(hwnd, lparam):
+        def callback(hwnd, _unused):
             windows.append(Window(hwnd))
             return True
 

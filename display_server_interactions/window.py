@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABCMeta, abstractmethod
+from typing import Optional
 from .image import Image
 from .buttons import MouseButtons
 from .box import Box
 
 
-class WindowBase(object, metaclass=ABCMeta):
+class WindowBase(metaclass=ABCMeta):
     @property
     @abstractmethod
     def name(self) -> str:
@@ -38,10 +39,9 @@ class WindowBase(object, metaclass=ABCMeta):
         """
         Returns: tuple: (x, y, width, height)
         """
-        pass
 
     @abstractmethod
-    def get_image(self, geometry: Box = None) -> Image:
+    def get_image(self, geometry: Optional[Box] = None) -> Image:
         """
         Returns an Image of the window.
         With the geometry parameter you can specify a sub-region of the window that will be captured.
@@ -60,12 +60,14 @@ class WindowBase(object, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def warp_pointer(self, x: int, y: int, geometry: Box = None) -> None:
+    # pylint: disable-next=invalid-name
+    def warp_pointer(self, x: int, y: int, geometry: Optional[Box] = None) -> None:
         """
         Moves the pointer relative to the window to the given coordinates.
         """
 
     @abstractmethod
+    # pylint: disable-next=invalid-name
     def send_mouse_click(self, x: int, y: int, button: MouseButtons = MouseButtons.LEFT) -> None:
         """
         Send a mouse click to the window at the given coordinates.

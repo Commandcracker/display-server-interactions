@@ -1,14 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# local modules
-from .base import DSIBase
-from .window import WindowBase
-from .image import Image
-from .buttons import MouseButtons
-from .box import Box
-
 # built-in modules
+from typing import Optional
 import logging
 import ctypes.util
 from ctypes import (
@@ -28,6 +22,13 @@ from ctypes import (
     c_uint32,
     _SimpleCData
 )
+
+# local modules
+from .base import DSIBase
+from .window import WindowBase
+from .image import Image
+from .buttons import MouseButtons
+from .box import Box
 
 # Setup Xlib Structures
 
@@ -202,7 +203,7 @@ def get_logger() -> logging.Logger:
 # Setup Xlib Variables
 
 
-class Masks(object):
+class Masks:
     """
     https://tronche.com/gui/x/xlib/events/mask.html\n
     /usr/include/X11/X.h: 150-175
@@ -235,7 +236,7 @@ class Masks(object):
     OwnerGrabButtonMask = 16777216
 
 
-class EventTypes(object):
+class EventTypes:
     """
     https://tronche.com/gui/x/xlib/events/types.html\n
     /usr/include/X11/X.h: 181-215
@@ -277,7 +278,7 @@ class EventTypes(object):
     LASTEvent = 36
 
 
-class KeyMasks(object):
+class KeyMasks:
     """
     https://tronche.com/gui/x/xlib/events/keyboard-pointer/keyboard-pointer.html\n
     /usr/include/X11/X.h: 221-228
@@ -292,12 +293,12 @@ class KeyMasks(object):
     Mod5Mask = 128
 
 
-class Xlib(object):
+class Xlib:
     def __init__(self):
         # load libX11.so.6
         x11 = ctypes.util.find_library("X11")
         if not x11:
-            raise Exception("X11 library not found!")
+            raise FileNotFoundError("X11 library not found!")
         self.xlib = ctypes.cdll.LoadLibrary(x11)
 
         self.xlib.XSetErrorHandler(error_handler)
@@ -370,8 +371,7 @@ class Xlib(object):
     def __getattribute__(self, __name: str):
         if __name in ["xlib", "display", "root_window"]:
             return super().__getattribute__(__name)
-        else:
-            return self.xlib.__getattribute__(__name)
+        return self.xlib.__getattribute__(__name)
 
 
 def get_window_property(xlib: Xlib, window_xid: int, property: str, type: _SimpleCData):
@@ -431,8 +431,7 @@ class Window(WindowBase):
         )
         if name:
             return name.decode('utf-8')
-        else:
-            return None
+        return None
 
     @property
     def pid(self) -> int:
@@ -453,7 +452,7 @@ class Window(WindowBase):
             height=gwa.height
         )
 
-    def get_image(self, geometry: Box = None) -> Image:
+    def get_image(self, geometry: Optional[Box] = None) -> Image:
         if geometry is None:
             geometry = self.geometry
 
@@ -518,7 +517,7 @@ class Window(WindowBase):
         for chr in str:
             self.send_chr(chr)
 
-    def warp_pointer(self, x: int, y: int, geometry: Box = None) -> None:
+    def warp_pointer(self, x: int, y: int, geometry: Optional[Box] = None) -> None:
         if geometry is None:
             geometry = self.geometry
 

@@ -1,19 +1,27 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+"""
+This is an example of DSI
+"""
+
+# local modules
 from . import DSI
 
 
 def main() -> None:
+    """
+    This is an example of DSI
+    """
     with DSI() as dsi:
         window = dsi.get_active_window()
 
         print("Active window: ")
-        print("\tName: {}".format(window.name))
-        print("\tPID: {}".format(window.pid))
+        print(f"\tName: {window.name}")
+        print(f"\tPID: {window.pid}")
         if window.xid:
-            print("\tXID: {}".format(window.xid))
-        print("\tGeometry: {}".format(window.geometry))
+            print(f"\tXID: {window.xid}")
+        print(f"\tGeometry: {window.geometry}")
 
 
 if __name__ == "__main__":

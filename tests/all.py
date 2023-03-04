@@ -29,7 +29,11 @@ def main() -> None:
         window.warp_pointer(100, 100)
         window.send_mouse_click(100, 100)
 
-        imshow('img', array(window.get_image()))
+        img = window.get_image()
+        print(img)
+
+        print(img.get_pixel(200, 200))
+        imshow('img', array(img))
         while True:
             if waitKey(1) & 0xFF == ord('q'):
                 break
