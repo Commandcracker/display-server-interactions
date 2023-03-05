@@ -7,8 +7,9 @@ All X11 specific DSI functions
 
 # built-in modules
 from typing import Optional
-import logging
-import ctypes.util
+from logging import getLogger, CRITICAL, Logger
+from ctypes.util import find_library
+from ctypes import cdll
 from ctypes import (
     POINTER,
     byref,
@@ -24,7 +25,9 @@ from ctypes import (
     c_uint,
     c_void_p,
     c_uint32,
-    _SimpleCData
+    _SimpleCData,
+    Union,
+    CFUNCTYPE
 )
 
 # local modules
@@ -37,6 +40,9 @@ from .box import Box
 # Setup Xlib Structures
 
 # pylint: disable=too-few-public-methods
+
+PLAINMASK = 0x00FFFFFF
+ZPIXMAP = 2
 
 
 class Display(Structure):
@@ -129,41 +135,41 @@ class XKeyEvent(Structure):
     ]
 
 
-class XButtonEvent(ctypes.Structure):
+class XButtonEvent(Structure):
     """
     https://tronche.com/gui/x/xlib/events/keyboard-pointer/keyboard-pointer.html#XButtonEvent\n
     /usr/include/X11/Xlib.h: 575-589
     """
 
     _fields_ = [
-        ('type', ctypes.c_int),
-        ('serial', ctypes.c_ulong),
-        ('send_event', ctypes.c_int),
-        ('display', ctypes.POINTER(Display)),
-        ('window', ctypes.c_ulong),  # Window (XID)
-        ('root', ctypes.c_ulong),  # Window (XID)
-        ('subwindow', ctypes.c_ulong),  # Window (XID)
-        ('time', ctypes.c_ulong),  # Time
-        ('x', ctypes.c_int),
-        ('y', ctypes.c_int),
-        ('x_root', ctypes.c_int),
-        ('y_root', ctypes.c_int),
-        ('state', ctypes.c_uint),
-        ('button', ctypes.c_uint),
-        ('same_screen', ctypes.c_int),
+        ('type', c_int),
+        ('serial', c_ulong),
+        ('send_event', c_int),
+        ('display', POINTER(Display)),
+        ('window', c_ulong),  # Window (XID)
+        ('root', c_ulong),  # Window (XID)
+        ('subwindow', c_ulong),  # Window (XID)
+        ('time', c_ulong),  # Time
+        ('x', c_int),
+        ('y', c_int),
+        ('x_root', c_int),
+        ('y_root', c_int),
+        ('state', c_uint),
+        ('button', c_uint),
+        ('same_screen', c_int),
     ]
 
 
-class XEvent(ctypes.Union):
+class XEvent(Union):
     """
     https://tronche.com/gui/x/xlib/events/structures.html#XEvent\n
     /usr/include/X11/Xlib.h: 973-1009
     """
     _fields_ = [
-        ('type', ctypes.c_int),
+        ('type', c_int),
         ('xkey', XKeyEvent),
         ('xbutton', XButtonEvent),
-        ('pad', ctypes.c_long*24),
+        ('pad', c_long*24),
     ]
 
 
@@ -188,11 +194,11 @@ class XErrorEvent(Structure):
     ]
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.CRITICAL)
+logger = getLogger(__name__)
+logger.setLevel(CRITICAL)
 
 
-@ctypes.CFUNCTYPE(c_int, POINTER(Display), POINTER(XErrorEvent))
+@CFUNCTYPE(c_int, POINTER(Display), POINTER(XErrorEvent))
 def error_handler(_, event):
     """
     A C function that handles X11 errors.
@@ -201,7 +207,7 @@ def error_handler(_, event):
     return 0
 
 
-def get_logger() -> logging.Logger:
+def get_logger() -> Logger:
     """
     Returns a logger that is responsible for logging XErrorEvents.
     The logger is set to CRITICAL. So it will not log anything.
@@ -310,10 +316,10 @@ class Xlib:
 
     def __init__(self):
         # load libX11.so.6
-        x11 = ctypes.util.find_library("X11")
+        x11 = find_library("X11")
         if not x11:
             raise FileNotFoundError("X11 library not found!")
-        self.xlib = ctypes.cdll.LoadLibrary(x11)
+        self.xlib = cdll.LoadLibrary(x11)
 
         self.xlib.XSetErrorHandler(error_handler)
 
@@ -477,15 +483,15 @@ class Window(WindowBase):
         ximage = self.xlib.XGetImage(
             self.xlib.display,  # Display
             self.xid,  # Drawable (Window XID)
-            geometry.x,  # x
-            geometry.y,  # y
+            geometry.x - self.geometry.x,  # x
+            geometry.y - self.geometry.y,  # y
             geometry.width,  # width
             geometry.height,  # height
-            0x00FFFFFF,  # plane_mask
-            2  # format = ZPixmap
+            PLAINMASK,  # plane_mask
+            ZPIXMAP  # format
         )
 
-        raw_data = ctypes.cast(
+        raw_data = cast(
             ximage.contents.data,
             POINTER(c_ubyte * geometry.height * geometry.width * 4)
         )
@@ -520,7 +526,7 @@ class Window(WindowBase):
             key.window,  # Window w
             True,  # Bool propagate
             Masks.KeyPressMask,  # long event_mask
-            ctypes.byref(key)  # XEvent *event_send
+            byref(key)  # XEvent *event_send
         )
 
         # flush display or events will run delayed cus thai'r only called on the next update
@@ -575,7 +581,7 @@ class Window(WindowBase):
             event.window,
             True,
             Masks.ButtonPressMask,
-            ctypes.byref(event)
+            byref(event)
         )
 
         # flush display or events will run delayed cus thai'r only called on the next update
@@ -588,7 +594,7 @@ class Window(WindowBase):
             event.window,
             True,
             Masks.ButtonReleaseMask,
-            ctypes.byref(event)
+            byref(event)
         )
 
         # flush display or events will run delayed cus thai'r only called on the next update
