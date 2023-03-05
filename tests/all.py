@@ -25,6 +25,7 @@ def main() -> None:
         print("Geometry:", window.geometry)
 
         window.send_str("Hello World")
+        window.send_chr("Up")
 
         window.warp_pointer(100, 100)
         window.send_mouse_click(100, 100)
