@@ -42,7 +42,8 @@ Copies the source rectangle directly to the destination rectangle.
 """
 SRCCOPY = 0x00CC0020
 WM_CHAR = 0x0102
-
+WM_KEYDOWN = 0x0100
+WM_KEYUP = 0x0101
 # pylint: disable=too-few-public-methods
 
 
@@ -149,7 +150,38 @@ class Window(WindowBase):
         return img
 
     def send_chr(self, character: chr) -> None:
-        user32.PostMessageW(self.window, WM_CHAR, ord(character), 0)
+        vk_map = {
+            "return": 0x0D,
+            "tab": 0x09,
+            "shift_l": 0xA0,
+            "shift_r": 0xA1,
+            "control_r": 0x11,
+            "control_r": 0x11,
+            "alt_l": 0x12,
+            "alt_r": 0x12,
+            "pause": 0x13,
+            "caps_lock": 0x14,
+            "escape": 0x1B,
+            "space": 0x20,
+            "prior": 0x21,
+            "next": 0x22,
+            "end": 0x23,
+            "home": 0x24,
+            "left": 0x25,
+            "up": 0x26,
+            "right": 0x27,
+            "down": 0x28,
+            "print": 0x2C,
+            "insert": 0x2D,
+            "delete": 0x2E
+        }
+
+        vk = vk_map.get(character.lower())
+        if vk is None:
+            user32.PostMessageW(self.window, WM_CHAR, ord(character), 0)
+        else:
+            user32.PostMessageW(self.window, WM_KEYDOWN, vk, 0)
+            user32.PostMessageW(self.window, WM_KEYUP, vk, 0)
 
     def send_str(self, string: str) -> None:
         for character in string:
