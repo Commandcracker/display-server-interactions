@@ -14,7 +14,7 @@ from .exceptions import (
     OSNotSupportedError as __OSNotSupportedError
 )
 
-__version__ = "0.0.dev10"
+__version__ = "0.0.dev11"
 __author__ = "Commandcracker"
 
 __os_name = __system().lower()
