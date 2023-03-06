@@ -3,6 +3,7 @@
         "donjayamanne.python-extension-pack", // for python support
         "ritwickdey.LiveServer", // for documentation preview
         "DavidAnson.vscode-markdownlint", // that you dont mess up your markdown files
-        "lextudio.restructuredtext-pack" // for restructured text support
+        "lextudio.restructuredtext-pack", // for restructured text support
+        "charliermarsh.ruff" // python linter
     ]
 }

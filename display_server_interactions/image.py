@@ -22,7 +22,8 @@ class Image:
     @property
     def __array_interface__(self) -> dict:
         """
-        A property method that returns an interface dictionary for the numpy array interface.
+        A property method that returns an interface
+        for the numpy array interface.
         https://docs.scipy.org/doc/numpy/reference/arrays.interface.html
         """
         return {
@@ -38,7 +39,8 @@ class Image:
     # pylint: disable-next=invalid-name
     def get_pixel(self, x: int, y: int) -> Tuple[int, int, int, int]:
         """
-        This function retrieves the RGBA values of the pixel located at the specified coordinates,
+        This function retrieves the RGBA values of the pixel,
+        located at the specified coordinates
         and returns them as a 4-tuple integer.
         """
         pixel_start_index = (y * self.width + x) * 4
